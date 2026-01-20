@@ -35,13 +35,14 @@ This is the primary (and currently only) node in the extension. It is fully migr
     - `bright_adjustment` (`io.Float`): Manual brightness multiplier.
     - `highlight_mode` (`io.Combo`): Highlight recovery mode.
 - **Outputs**:
-    - `IMAGE` (`io.Image`): Standard RGB tensor.
+    - `IMAGE` (`io.Image`): Standard RGB tensor (the developed RAW image).
+    - `preview` (`io.Image`): Extracted embedded JPEG/Bitmap preview (or black image if missing).
 
 #### Execution Logic (`execute` method)
 1. Opens the file using `rawpy.imread`.
 2. Calls `raw.postprocess` with the specified parameters.
 3. **Note**: Supports full 16-bit high dynamic range (float32) if `output_16bit` is enabled.
-4. Converts the resulting RGB array to a PIL Image, then to a Torch Tensor normalized to [0.0, 1.0].
+4. Extracts embedded thumbnail (JPEG/Bitmap) converting it to a secondary tensor.
 5. Returns data wrapped in `io.NodeOutput`.
 
 ## 🛠️ Developmental Context

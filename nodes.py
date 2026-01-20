@@ -47,7 +47,7 @@ class LoadRawImage(io.ComfyNode):
                     tooltip="How to handle blown-out highlights:\n• Clip: Standard, clipls white to max.\n• Blend: Blends clipped channels (fixes pink highlights).\n• Reconstruct: Estimates missing data (slower but best).",
                 ),
             ],
-            outputs=[io.Image.Output()],
+            outputs=[io.Image.Output(), io.Image.Output(name="preview")],
         )
 
     @classmethod
@@ -56,13 +56,13 @@ class LoadRawImage(io.ComfyNode):
     ) -> io.NodeOutput:
         image_path = folder_paths.get_annotated_filepath(image)
         try:
-            tensor = process_raw(
+            image, preview = process_raw(
                 image_path,
                 output_16bit=output_16bit,
                 white_balance=white_balance,
                 highlight_mode_key=highlight_mode,
             )
-            return io.NodeOutput(tensor)
+            return io.NodeOutput(image, preview)
         except Exception as e:
             raise RuntimeError(f"Failed to load RAW image: {str(e)}")
 
@@ -219,7 +219,7 @@ class LoadRawImageAdvanced(io.ComfyNode):
                     tooltip="When shifting exposure logic, how much to preserve highlights from clipping (0.0 - 1.0).",
                 ),
             ],
-            outputs=[io.Image.Output()],
+            outputs=[io.Image.Output(), io.Image.Output(name="preview")],
         )
 
     @classmethod
@@ -247,7 +247,7 @@ class LoadRawImageAdvanced(io.ComfyNode):
     ) -> io.NodeOutput:
         image_path = folder_paths.get_annotated_filepath(image)
         try:
-            tensor = process_raw(
+            image, preview = process_raw(
                 image_path,
                 output_16bit=output_16bit,
                 white_balance=white_balance,
@@ -263,7 +263,7 @@ class LoadRawImageAdvanced(io.ComfyNode):
                 exp_preserve_highlights=exp_preserve_highlights,
                 chromatic_aberration=(ca_red_scale, ca_blue_scale),
             )
-            return io.NodeOutput(tensor)
+            return io.NodeOutput(image, preview)
         except Exception as e:
             raise RuntimeError(f"Failed to load RAW image: {str(e)}")
 

@@ -102,10 +102,46 @@ def process_raw(
     with rawpy.imread(image_path) as raw:
         rgb = raw.postprocess(**pp_args)
 
+        # Try to extract embedded thumbnail
+        try:
+            thumb = raw.extract_thumb()
+        except Exception:
+            thumb = None
+
+    # Process Thumbnail
+    if thumb is not None:
+        try:
+            if thumb.format == rawpy.ThumbFormat.JPEG:
+                import io
+                from PIL import Image
+
+                # thumb.data is bytes
+                pil_image = Image.open(io.BytesIO(thumb.data))
+                # Convert to RGB if needed (JPEGs usually are, but safety first)
+                pil_image = pil_image.convert("RGB")
+                thumb_array = np.array(pil_image).astype(np.float32) / 255.0
+            elif thumb.format == rawpy.ThumbFormat.BITMAP:
+                # thumb.data is numpy array
+                thumb_array = thumb.data.astype(np.float32) / 255.0
+            else:
+                # Unknown format, fallback
+                thumb_array = np.zeros((1, 1, 3), dtype=np.float32)
+        except Exception:
+            thumb_array = np.zeros((1, 1, 3), dtype=np.float32)
+    else:
+        # No thumbnail found, return 1x1 black image
+        thumb_array = np.zeros((1, 1, 3), dtype=np.float32)
+
+    # Ensure thumbnail has 3 channels
+    if thumb_array.ndim == 2:
+        thumb_array = np.stack([thumb_array] * 3, axis=-1)
+
+    thumb_tensor = torch.from_numpy(thumb_array).unsqueeze(0)
+
     # Convert to standard ComfyUI format (float32 [0,1])
     # rawpy output -> (H, W, 3) numpy array
     divisor = 65535.0 if output_16bit else 255.0
     img_array = rgb.astype(np.float32) / divisor
 
     # Convert numpy array to torch tensor
-    return torch.from_numpy(img_array).unsqueeze(0)
+    return torch.from_numpy(img_array).unsqueeze(0), thumb_tensor
