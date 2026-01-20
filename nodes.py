@@ -14,7 +14,12 @@ from .raw_processing import (
 
 
 def _get_files():
-    return folder_paths.get_filename_list("images")
+    input_dir = folder_paths.get_input_directory()
+    files = []
+    for root, dirs, filenames in os.walk(input_dir):
+        for filename in filenames:
+            files.append(os.path.relpath(os.path.join(root, filename), input_dir))
+    return sorted(files)
 
 
 class LoadRawImage(io.ComfyNode):
@@ -47,7 +52,7 @@ class LoadRawImage(io.ComfyNode):
                     tooltip="How to handle blown-out highlights:\n• Clip: Standard, clipls white to max.\n• Blend: Blends clipped channels (fixes pink highlights).\n• Reconstruct: Estimates missing data (slower but best).",
                 ),
             ],
-            outputs=[io.Image.Output(), io.Image.Output(name="preview")],
+            outputs=[io.Image.Output(), io.Image.Output("preview")],
         )
 
     @classmethod
@@ -247,7 +252,7 @@ class LoadRawImageAdvanced(io.ComfyNode):
                     tooltip="Develop the image at half resolution (4x faster). Great for previews.",
                 ),
             ],
-            outputs=[io.Image.Output(), io.Image.Output(name="preview")],
+            outputs=[io.Image.Output(), io.Image.Output("preview")],
         )
 
     @classmethod
