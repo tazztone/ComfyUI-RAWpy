@@ -1,7 +1,10 @@
-from .nodes import LoadRawImage, NODE_DISPLAY_NAME_MAPPINGS
+from .nodes import LoadRawImage, LoadRawImageAdvanced, NODE_DISPLAY_NAME_MAPPINGS
 
 # V1 Legacy Mappings
-NODE_CLASS_MAPPINGS = {"Load Raw Image": LoadRawImage}
+NODE_CLASS_MAPPINGS = {
+    "Load Raw Image": LoadRawImage,
+    "Load Raw Image Advanced": LoadRawImageAdvanced,
+}
 WEB_DIRECTORY = "./web"
 
 
@@ -9,7 +12,7 @@ WEB_DIRECTORY = "./web"
 class RAWExtension:
     @classmethod
     def get_node_list(cls):
-        return [LoadRawImage]
+        return [LoadRawImage, LoadRawImageAdvanced]
 
 
 def comfy_entrypoint():

@@ -61,6 +61,95 @@ The node outputs a standard `IMAGE` type, meaning it can be plugged directly int
 - Image Previewers.
 - Any standard ComfyUI image processing node (Reroute, Upscale, Crop, etc.).
 
+## 🧪 Testing Guide
+
+This repository uses a comprehensive test suite to ensure the stability of the nodes. The tests are designed to run both **standalone** (unit tests) and **integrated** (with a live ComfyUI server).
+
+### 🚀 Quick Start
+
+#### 1. Configure VS Code (Recommended)
+This repository includes a `.vscode/settings.json` that pre-configures the correct Python environment and test arguments.
+
+1.  Open this folder in VS Code.
+2.  Go to the **Testing** tab (flask icon).
+3.  Click "Refresh Tests".
+4.  Run any test directly from the UI.
+
+> **Note:** If tests are not found, ensure your Python interpreter is set to the ComfyUI virtual environment: `../../venv/Scripts/python.exe`.
+
+#### 2. Run from Command Line
+You can use the provided `run_tests.py` script which handles environment setup automatically.
+
+```powershell
+cd custom_nodes\ComfyUI-RAWpy
+
+# Run ALL tests
+..\..\venv\Scripts\python run_tests.py
+
+# Run ONLY Unit Tests (Fast, no server needed)
+..\..\venv\Scripts\python run_tests.py -m unit
+
+# Run ONLY Integration Tests (Requires ComfyUI running)
+..\..\venv\Scripts\python run_tests.py -m integration
+```
+
+### 🧪 Test Suite Structure
+
+The tests are split into two categories to ensure fast feedback loops while still verifying full functionality.
+
+#### Unit Tests (`tests/unit/`)
+*   **Speed:** Fast (< 1s)
+*   **Dependencies:** None (Standalone)
+*   **Purpose:** Verify internal logic, math, and syntax without loading ComfyUI.
+
+| File | Description |
+| :--- | :--- |
+| `test_syntax.py` | Ensures all files are valid Python and follow strict import rules. |
+| `test_raw_processing.py` | Validates isolated core logic (`raw_processing.py`) without ComfyUI dependencies. |
+
+#### Integration Tests (`tests/integration/`)
+*   **Speed:** Slow (Requires network)
+*   **Dependencies:** Running ComfyUI Server (Port 8188)
+*   **Purpose:** Verify node registration, API endpoints, and workflow validity.
+
+| Category | Description |
+| :--- | :--- |
+| **Node Registration** | Checks that nodes are correctly registered with the server. |
+| **Server Health** | Verifies the ComfyUI API is reachable and healthy. |
+
+### 🛠 Developer Guide
+
+#### Architectural Best Practices (Testing)
+The codebase uses a **Dependency Isolation** pattern to enable unit testing.
+
+1.  **Separation of Concerns**:
+    - `raw_processing.py`: Pure Python logic. **NO** imports from `comfy` or `folder_paths`.
+    - `nodes.py`: ComfyUI adapter. handles Inputs/Outputs and calls `raw_processing`.
+2.  **Testing Strategy**:
+    - **Unit Tests** import `raw_processing.py` directly. They are fast and stable because they don't trigger ComfyUI's complex import chain.
+    - **Do NOT** define core logic inside the `execute` method of `nodes.py`. Always extract it.
+
+#### Writing Unit Tests
+- Use existing `mock_rawpy` fixture in `conftest.py` to simulate LibRaw behavior.
+- Import functions from `raw_processing.py`, **not** from `nodes.py`.
+
+#### Writing Integration Tests
+Integration tests use the `api_client` fixture to talk to the server.
+```python
+@pytest.mark.integration
+def test_my_node_exists(self, api_client):
+    assert api_client.node_exists("Load Raw Image")
+```
+
+#### Troubleshooting Common Issues
+- **`ImportError: attempted relative import...`**:
+    - **Cause**: Running `pytest` from the root directory.
+    - **Fix**: Always use `python run_tests.py`.
+- **`ModuleNotFoundError: No module named 'folder_paths'`**:
+    - **Cause**: Your unit test is importing `nodes.py` which depends on ComfyUI.
+    - **Fix**: Move the logic you are testing into `raw_processing.py` (or a similar utility file) and test that instead.
+
+
 ## 🎓 Recommended Tasks for Agents
 
 - **Enhancement**: Expose more `rawpy.postprocess` flags (e.g., Gamma, Color Space, White Balance).

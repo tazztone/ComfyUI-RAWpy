@@ -9,6 +9,8 @@ dependencies = ["rawpy", "numpy", "pillow"]
 dev = [
     "uv",
     "ruff",
+    "pytest>=7.0",
+    "pytest-cov",
 ]
 
 [project.urls]

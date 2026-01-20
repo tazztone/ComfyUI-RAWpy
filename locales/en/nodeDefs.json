@@ -1,21 +1,71 @@
 {
     "Load Raw Image": {
-        "title": "Load RAW Image 📷",
+        "title": "Load RAW Image (Simple) 📷",
         "inputs": {
             "image": "Image",
-            "use_auto_bright": "Auto Brightness",
-            "bright_adjustment": "Brightness",
+            "output_16bit": "Output 16-bit",
+            "white_balance": "White Balance",
             "highlight_mode": "Highlight Mode"
         },
         "widgets": {
             "image": {
-                "tooltip": "The RAW image file to load from the input directory."
+                "tooltip": "The RAW image file to load."
             },
-            "use_auto_bright": {
-                "tooltip": "Automatically adjust brightness using LibRaw's auto-scale."
+            "output_16bit": {
+                "tooltip": "If enabled, outputs 16-bit float32 data for maximum dynamic range. If disabled, outputs 8-bit."
             },
-            "bright_adjustment": {
-                "tooltip": "Manual brightness multiplier (default 1.0)."
+            "white_balance": {
+                "tooltip": "Select white balance mode: 'camera' (as shot), 'auto' (calculated), or 'daylight'."
+            },
+            "highlight_mode": {
+                "tooltip": "Method to handle blown highlights: 'clip' (cut off), 'ignore', 'blend', or 'reconstruct'."
+            }
+        },
+        "outputs": {
+            "IMAGE": "Image"
+        }
+    },
+    "Load Raw Image Advanced": {
+        "title": "Load RAW Image (Advanced) 📷",
+        "inputs": {
+            "image": "Image",
+            "output_16bit": "Output 16-bit",
+            "white_balance": "White Balance",
+            "custom_wb_r": "WB Red",
+            "custom_wb_g1": "WB Green 1",
+            "custom_wb_b": "WB Blue",
+            "custom_wb_g2": "WB Green 2",
+            "highlight_mode": "Highlight Mode",
+            "use_auto_bright": "Auto Brightness",
+            "bright_adjustment": "Brightness Multiplier",
+            "demosaic_algorithm": "Demosaic Algo",
+            "orientation": "Orientation",
+            "ca_red_scale": "CA Red Scale",
+            "ca_blue_scale": "CA Blue Scale",
+            "output_colorspace": "Color Space",
+            "gamma_power": "Gamma Power",
+            "gamma_slope": "Gamma Slope",
+            "exp_shift": "Exposure Shift",
+            "exp_preserve_highlights": "Preserve Highlights"
+        },
+        "widgets": {
+            "image": {
+                "tooltip": "The RAW image file to load."
+            },
+            "output_16bit": {
+                "tooltip": "Output 16-bit data (float32) for high dynamic range."
+            },
+            "demosaic_algorithm": {
+                "tooltip": "Interpolation method. AHD is standard, AMAZE is high quality (slow), LINEAR is fast."
+            },
+            "orientation": {
+                "tooltip": "Override image orientation metadata."
+            },
+            "exp_shift": {
+                "tooltip": "Linear exposure shift factor (1.0 = no change, 2.0 = +1 stop)."
+            },
+            "exp_preserve_highlights": {
+                "tooltip": "Ratio (0.0-1.0) of highlights to preserve when boosting exposure."
             }
         },
         "outputs": {
