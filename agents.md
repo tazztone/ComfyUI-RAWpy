@@ -40,14 +40,14 @@ This is the primary (and currently only) node in the extension. It is fully migr
 #### Execution Logic (`execute` method)
 1. Opens the file using `rawpy.imread`.
 2. Calls `raw.postprocess` with the specified parameters.
-3. **Note**: Currently forced to 8-bit output (`output_bps=8`).
+3. **Note**: Supports full 16-bit high dynamic range (float32) if `output_16bit` is enabled.
 4. Converts the resulting RGB array to a PIL Image, then to a Torch Tensor normalized to [0.0, 1.0].
 5. Returns data wrapped in `io.NodeOutput`.
 
 ## 🛠️ Developmental Context
 
 ### Common Extension Patterns
-- **16-bit Support**: ComfyUI handles float32 tensors. While `rawpy` supports 16-bit output (`output_bps=16`), the current implementation downsamples to 8-bit first. A common upgrade would be implementing high-bit-depth processing to preserve the true RAW dynamic range.
+- **16-bit Support**: ComfyUI handles float32 tensors. This node fully supports converting 16-bit RAW data into float32 tensors, preserving the dynamic range.
 - **Debayering Options**: `rawpy` provides various interpolation methods (`AHD`, `VNG`, `PPG`, etc.). These could be exposed as input parameters.
 - **White Balance**: Currently relies on `rawpy` defaults (usually camera WB). Methods like `use_camera_wb`, `user_flip`, and `auto_wb` could be added.
 
