@@ -1,7 +1,9 @@
 import folder_paths
 import hashlib
 import numpy as np
+
 import os
+from comfy_api.latest import io, ui
 from .raw_processing import (
     process_raw,
     HIGHLIGHT_MODES,
@@ -55,7 +57,7 @@ class LoadRawImage(io.ComfyNode):
     @classmethod
     def execute(
         cls, image, output_16bit=True, white_balance="camera", highlight_mode="clip"
-    ):
+    ) -> io.NodeOutput:
         image_path = folder_paths.get_annotated_filepath(image)
         try:
             tensor = process_raw(
@@ -166,7 +168,7 @@ class LoadRawImageAdvanced(io.ComfyNode):
         gamma_slope=4.5,
         exp_shift=1.0,
         exp_preserve_highlights=0.0,
-    ):
+    ) -> io.NodeOutput:
         image_path = folder_paths.get_annotated_filepath(image)
         try:
             tensor = process_raw(

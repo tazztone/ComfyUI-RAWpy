@@ -16,8 +16,8 @@ This document provides a comprehensive overview of the `ComfyUI-RAWpy` repositor
 
 The repository follows the standard ComfyUI custom node structure:
 
-- `nodes.py`: Contains the definition and logic for the `LoadRawImage` node.
-- `__init__.py`: Handles the registration of node classes and display names for ComfyUI.
+- `nodes.py`: Contains the definition and logic for the RAW loading nodes, fully compliant with **V3 API**.
+- `__init__.py`: Handles node registration using the `ComfyExtension` class and `comfy_entrypoint`.
 - `requirements.txt`: Specifies dependencies (`rawpy`, `numpy`, `Pillow`, `torch`).
 
 ## 🧩 Key Components
@@ -42,6 +42,7 @@ This is the primary (and currently only) node in the extension. It is fully migr
 2. Calls `raw.postprocess` with the specified parameters.
 3. **Note**: Currently forced to 8-bit output (`output_bps=8`).
 4. Converts the resulting RGB array to a PIL Image, then to a Torch Tensor normalized to [0.0, 1.0].
+5. Returns data wrapped in `io.NodeOutput`.
 
 ## 🛠️ Developmental Context
 
@@ -116,6 +117,7 @@ The tests are split into two categories to ensure fast feedback loops while stil
 | :--- | :--- |
 | **Node Registration** | Checks that nodes are correctly registered with the server. |
 | **Server Health** | Verifies the ComfyUI API is reachable and healthy. |
+| **Server Startup** | Verifies that ComfyUI starts successfully with the node installed (`test_server_startup.py`). |
 
 ### 🛠 Developer Guide
 
@@ -156,7 +158,8 @@ def test_my_node_exists(self, api_client):
 - **Optimization**: Support 16-bit processing directly into float32 tensors for better quality.
 ## ✅ Completed Tasks
 
-- **Modernization**: Full migration to ComfyUI V3 API (`io.ComfyNode`).
+- **Modernization**: Full migration to ComfyUI V3 API (`io.ComfyNode`, `ComfyExtension`).
+- **Testing**: Established automated testing framework including unit tests and **Server Startup** verification.
 - **Standardization**: Added Workflow Templates (`example_workflows/`) and Documentation (`web/docs/`).
 
 ## 📚 ComfyUI Documentation Reference
