@@ -62,6 +62,11 @@ class LoadRawImage(io.ComfyNode):
                     default="clip",
                     tooltip="How to handle blown-out highlights:\n• Clip: Standard, clipls white to max.\n• Blend: Blends clipped channels (fixes pink highlights).\n• Reconstruct: Estimates missing data (slower but best).",
                 ),
+                io.Boolean.Input(
+                    "half_size",
+                    default=False,
+                    tooltip="Develop the image at half resolution (4x faster). Great for previews.",
+                ),
             ],
             outputs=[
                 io.Image.Output(),
@@ -72,7 +77,12 @@ class LoadRawImage(io.ComfyNode):
 
     @classmethod
     def execute(
-        cls, image, output_16bit=True, white_balance="camera", highlight_mode="clip"
+        cls,
+        image,
+        output_16bit=True,
+        white_balance="camera",
+        highlight_mode="clip",
+        half_size=False,
     ) -> io.NodeOutput:
         image_path = folder_paths.get_annotated_filepath(image)
         try:
@@ -82,6 +92,7 @@ class LoadRawImage(io.ComfyNode):
                 output_16bit=output_16bit,
                 white_balance=white_balance,
                 highlight_mode_key=highlight_mode,
+                half_size=half_size,
             )
 
             # Try to extract small thumbnail via ExifTool

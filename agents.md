@@ -34,6 +34,7 @@ This is the primary (and currently only) node in the extension. It is fully migr
     - `use_auto_bright` (`io.Boolean`): Auto-brightness toggle.
     - `bright_adjustment` (`io.Float`): Manual brightness multiplier.
     - `highlight_mode` (`io.Combo`): Highlight recovery mode.
+    - `half_size` (`io.Boolean`): Half-resolution development toggle.
 - **Outputs**:
     - `IMAGE` (`io.Image`): Standard RGB tensor (the developed RAW image).
     - `preview` (`io.Image`): Extracted embedded JPEG/Bitmap preview (or black image if missing).

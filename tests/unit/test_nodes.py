@@ -33,6 +33,7 @@ class TestLoadRawImage:
                 output_16bit=False,
                 white_balance="daylight",
                 highlight_mode="blend",
+                half_size=True,
             )
 
             # verify generic folder path resolution
@@ -44,6 +45,7 @@ class TestLoadRawImage:
                 output_16bit=False,
                 white_balance="daylight",
                 highlight_mode_key="blend",
+                half_size=True,
             )
 
             # verify output wrapping

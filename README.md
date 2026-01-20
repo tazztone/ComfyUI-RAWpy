@@ -1,18 +1,18 @@
 # ComfyUI RAW Image Loader
 
-![V3 Compatible](https://img.shields.io/badge/ComfyUI-V3%20API-green)
-![License](https://img.shields.io/github/license/dimtion/comfyui-raw-image)
-
-A custom node extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) that enables high-quality loading and processing of RAW image files directly into your workflows.
-A [ComfyUI](https://github.com/comfyanonymous/ComfyUI) custom node for loading and processing RAW image files using `rawpy` (LibRaw).
+A custom node extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) improved upon fork from [dimtion/comfyui-raw-image](https://github.com/dimtion/comfyui-raw-image) that enables high-quality loading and processing of RAW image files directly into your workflows using `rawpy` (LibRaw) and `ExifTool`.
 
 ![Screenshot of the tool](.github/img/node-screenshot.png)
 
 ## Features
 
 - **Standard & Advanced Nodes**:
-  - `Load RAW Image (Simple)`: Quick loading with essential settings.
+  - `Load RAW Image (Simple)`: Quick loading with essential settings and fast draft mode.
   - `Load RAW Image (Advanced)`: Full professional control over the development pipeline.
+- **Triple-Output System**:
+  - **IMAGE**: The developed RAW image (processed via rawpy).
+  - **preview**: Higher-resolution embedded JPEG/Bitmap (fast loading).
+  - **thumbnail**: Tiny embedded thumbnail (highly optimized via ExifTool).
 - **High Quality Pipeline**:
   - **16-bit Output**: Process in high bit-depth to preserve dynamic range.
   - **Demosaicing Control**: Select algorithms from AHD (default) to AMAZE (high quality) or LINEAR (fast).
@@ -29,6 +29,10 @@ A [ComfyUI](https://github.com/comfyanonymous/ComfyUI) custom node for loading a
 
 - ComfyUI installed and working
 - Python 3.8+ environment
+- **ExifTool (Optional but Recommended)**: Required for high-speed small thumbnail extraction.
+  - **Windows**: Download `exiftool.exe` from [exiftool.org](https://exiftool.org/) and place it in your system PATH.
+  - **Linux**: `sudo apt install exiftool`
+  - **macOS**: `brew install exiftool`
 
 ### Install Steps
 
@@ -36,7 +40,7 @@ A [ComfyUI](https://github.com/comfyanonymous/ComfyUI) custom node for loading a
 
 ```bash
 cd ComfyUI/custom_nodes/
-git clone https://github.com/your-repo/ComfyUI-RAWpy.git
+git clone https://github.com/tazztone/ComfyUI-RAWpy.git
 ```
 
 2. Install the required dependencies:
@@ -47,52 +51,33 @@ pip install -r requirements.txt
 
 3. Restart ComfyUI
 
-## Development & Testing
-
-This repository includes a `pytest` suite with mocked `rawpy` interactions.
-
-1. Install test dependencies:
-   ```bash
-   pip install -e ".[dev]"
-   ```
-2. Run tests:
-   ```bash
-   pytest
-   ```
-
 ## Nodes
 
-### Load RAW Image (Simple)
-- **Image**: Select RAW file.
-- **Output 16-bit**: Enable for higher quality float32 tensors.
-- **White Balance**: Camera / Auto / Daylight.
-- **Highlight Mode**: Clip / Ignore / Blend / Reconstruct.
+### Load RAW Image (Simple) 📷
+Essential settings for daily use.
+- **image**: Select RAW file.
+- **output_16bit**: Enable for higher quality float32 tensors.
+- **white_balance**: Camera / Auto / Daylight.
+- **highlight_mode**: Clip / Blend / Reconstruct.
+- **half_size**: Develop at half resolution (4x faster).
+- **Outputs**: `IMAGE`, `preview`, `thumbnail`.
 
-### Load RAW Image (Advanced)
-Exposes all parameters including:
-- Custom White Balance multipliers
-- Demosaicing Algorithm (AHD, VNG, PPG, DCB, AMAZE, etc.)
-- Output Color Space & Gamma
-- Exposure Shift & Highlight Preservation
-- Chromatic Aberration Correction
+### Load RAW Image (Advanced) 📷
+Full professional controls for fine-tuning.
+- **White Balance**: Custom RGB multipliers (R, G1, B, G2).
+- **Demosaicing**: AHD, VNG, PPG, DCB, AMAZE, LINEAR, DHT.
+- **Orientation**: Auto or manual flip degrees.
+- **Color Science**: Custom Output Colorspace and Gamma Corection.
+- **Exposure**: Shift (EV) and Highlight Preservation.
+- **Preprocessing**: Chromatic Aberration, Wavelet Denoise (noise_thr), FBDD Noise Reduction.
+- **Outputs**: `IMAGE`, `preview`, `thumbnail`.
 
-## Example Workflow
+## Roadmap
 
-![RAWpy Example Workflow](example_workflows/rawpy.jpg)
-
-## Usage
-
-1. Place your RAW image files in your ComfyUI input directory
-2. In the ComfyUI interface, add the "Load RAW image" node to your workflow
-3. Select your RAW file from the dropdown
-4. Configure the processing options:
-   - **use_auto_bright**: Enable/disable automatic brightness adjustment
-   - **bright_adjustment**: Fine-tune brightness (0.1-3.0)
-   - **highlight_mode**: Choose how to handle highlights in the image
-     - clip: Clip highlights to maximum value
-     - ignore: Preserve highlight values
-     - blend: Blend highlight areas
-     - reconstruct: Attempt to reconstruct highlight details
+This project is evolving into a professional metadata-driven workflow tool. Check [roadmap.md](roadmap.md) for details on:
+- **Phase 2**: Camera MakerNotes & Lens Metadata extraction.
+- **Phase 3**: Smart logic based on ISO/Focal Length.
+- **Phase 5**: XMP sidecar support for Lightroom/Capture One compatibility.
 
 ## Supported File Formats
 
@@ -101,7 +86,7 @@ Supports all RAW formats handled by the [rawpy library](https://www.libraw.org/s
 - Nikon (NEF)
 - Sony (ARW)
 - Fujifilm (RAF)
-- And many more
+- DNG (Digital Negative)
 
 ## License
 
@@ -109,4 +94,5 @@ Supports all RAW formats handled by the [rawpy library](https://www.libraw.org/s
 
 ## Acknowledgements
 
-- [rawpy](https://github.com/letmaik/rawpy) for RAW image processing
+- [rawpy](https://github.com/letmaik/rawpy) for RAW image processing.
+- [ExifTool](https://exiftool.org/) for superior metadata and thumbnail handling.
