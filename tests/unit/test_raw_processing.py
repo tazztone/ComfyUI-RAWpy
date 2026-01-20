@@ -118,3 +118,24 @@ class TestRawProcessing:
         # Should be 1x1 black image
         assert preview.shape == (1, 1, 1, 3)
         assert preview.max() == 0.0
+
+    def test_denoising_params_passed(self, mock_rawpy):
+        """Verify denoising parameters are forwarded."""
+        from raw_processing import FBDD_MODES
+
+        process_raw(
+            "test.arw",
+            noise_thr=10.5,
+            fbdd_noise_reduction="light",
+            median_filter_passes=3,
+        )
+        call_args = mock_rawpy.postprocess.call_args
+        assert call_args.kwargs["noise_thr"] == 10.5
+        assert call_args.kwargs["fbdd_noise_reduction"] == FBDD_MODES["light"]
+        assert call_args.kwargs["median_filter_passes"] == 3
+
+    def test_half_size_passed(self, mock_rawpy):
+        """Verify half_size parameter is forwarded."""
+        process_raw("test.arw", half_size=True)
+        call_args = mock_rawpy.postprocess.call_args
+        assert call_args.kwargs["half_size"] is True

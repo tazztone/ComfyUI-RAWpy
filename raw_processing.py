@@ -44,6 +44,12 @@ ORIENTATION_MAP = {
     "90° CCW": 5,
 }
 
+FBDD_MODES = {
+    "off": rawpy.FBDDNoiseReductionMode.Off,
+    "light": rawpy.FBDDNoiseReductionMode.Light,
+    "full": rawpy.FBDDNoiseReductionMode.Full,
+}
+
 
 def process_raw(
     image_path,
@@ -60,6 +66,10 @@ def process_raw(
     exp_shift=1.0,
     exp_preserve_highlights=0.0,
     chromatic_aberration=(1.0, 1.0),
+    noise_thr=None,
+    fbdd_noise_reduction="off",
+    median_filter_passes=0,
+    half_size=False,
 ):
     """
     Process a RAW image file and return a torch tensor.
@@ -84,6 +94,12 @@ def process_raw(
         "output_color": OUTPUT_COLORSPACES.get(colorspace_key, rawpy.ColorSpace.sRGB),
         "gamma": gamma,
         "chromatic_aberration": chromatic_aberration,
+        "noise_thr": noise_thr,
+        "fbdd_noise_reduction": FBDD_MODES.get(
+            fbdd_noise_reduction, rawpy.FBDDNoiseReductionMode.Off
+        ),
+        "median_filter_passes": median_filter_passes,
+        "half_size": half_size,
     }
 
     # Exposure Shift

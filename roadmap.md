@@ -33,7 +33,7 @@ This document outlines the planned features and improvements for the `ComfyUI-RA
 *Focus: Cleaning up raw data before it enters the AI/Latent pipeline.*
 
 - [ ] **Wavelet Denoising**: Implement `noise_thr` for effective pre-demosaic noise reduction.
-- [ ] **Impulse Noise Reduction**: Add `fbdd_noise_reduction`.
+- [ ] **Impulse Noise Reduction**: Add `fbdd_noise_reduction` (Fix Bad Data Demosaicing).
 - [ ] **Median Filter Passes**: Post-demosaic filtering to reduce color moiré and artifacts.
 - [ ] **Dark Frame Subtraction**: Support loading an external dark frame to remove sensor noise patterns.
 - [ ] **Bad Pixel Correction**: Support external map files for sensor defect correction.
@@ -44,8 +44,8 @@ This document outlines the planned features and improvements for the `ComfyUI-RA
 - [ ] **Metadata Extraction**: Provide a dictionary of Exif and camera-specific metadata (ISO, Shutter, Aperture, Focal Length).
 - [ ] **Lens Profiles**: Output EXIF data specifically for lens-specific adjustments.
 - [ ] **XMP Sidecar Support**: Read `.xmp` files to apply WB and exposure from Lightroom/Darktable.
-- [ ] **Thumbnail Extraction Node**: Fast "instant-load" of the embedded JPEG preview for rapid prototyping.
-- [ ] **Half-Size Loading**: Option for fast loading by skipping interpolation for quick previews.
+- [x] **Embedded Preview Output**: Fast "instant-load" of the embedded JPEG preview for rapid prototyping.
+- [ ] **Lazy Loading / Draft Mode**: Option for fast loading by skipping interpolation for quick previews (e.g. half-size).
 
 ## 📽️ Priority 5: Advanced & Scientific Features
 *Focus: Deep sensor access and unconventional creative control.*

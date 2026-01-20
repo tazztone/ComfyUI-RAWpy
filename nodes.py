@@ -218,6 +218,34 @@ class LoadRawImageAdvanced(io.ComfyNode):
                     step=0.05,
                     tooltip="When shifting exposure logic, how much to preserve highlights from clipping (0.0 - 1.0).",
                 ),
+                # Denoising
+                io.Float.Input(
+                    "noise_thr",
+                    default=0.0,
+                    min=0.0,
+                    max=100.0,
+                    step=0.1,
+                    tooltip="Wavelet Denoising Threshold. Higher values remove more noise but may blur details. 0 = Off.",
+                ),
+                io.Combo.Input(
+                    "fbdd_noise_reduction",
+                    ["off", "light", "full"],
+                    default="off",
+                    tooltip="Fix Bad Data Demosaicing (Impulse Noise Reduction). Reduces color artifacts from dead pixels.",
+                ),
+                io.Int.Input(
+                    "median_filter_passes",
+                    default=0,
+                    min=0,
+                    max=10,
+                    tooltip="Number of post-demosaic 3x3 median filter passes to reduce color moiré.",
+                ),
+                # Performance
+                io.Boolean.Input(
+                    "half_size",
+                    default=False,
+                    tooltip="Develop the image at half resolution (4x faster). Great for previews.",
+                ),
             ],
             outputs=[io.Image.Output(), io.Image.Output(name="preview")],
         )
@@ -244,6 +272,10 @@ class LoadRawImageAdvanced(io.ComfyNode):
         gamma_slope=4.5,
         exp_shift=1.0,
         exp_preserve_highlights=0.0,
+        noise_thr=0.0,
+        fbdd_noise_reduction="off",
+        median_filter_passes=0,
+        half_size=False,
     ) -> io.NodeOutput:
         image_path = folder_paths.get_annotated_filepath(image)
         try:
@@ -262,6 +294,10 @@ class LoadRawImageAdvanced(io.ComfyNode):
                 exp_shift=exp_shift,
                 exp_preserve_highlights=exp_preserve_highlights,
                 chromatic_aberration=(ca_red_scale, ca_blue_scale),
+                noise_thr=noise_thr if noise_thr > 0 else None,
+                fbdd_noise_reduction=fbdd_noise_reduction,
+                median_filter_passes=median_filter_passes,
+                half_size=half_size,
             )
             return io.NodeOutput(image, preview)
         except Exception as e:

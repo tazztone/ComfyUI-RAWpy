@@ -38,6 +38,15 @@ This is the primary (and currently only) node in the extension. It is fully migr
     - `IMAGE` (`io.Image`): Standard RGB tensor (the developed RAW image).
     - `preview` (`io.Image`): Extracted embedded JPEG/Bitmap preview (or black image if missing).
 
+### `LoadRawImageAdvanced` Class
+The advanced node offers professional control, including:
+- **Denoising**:
+    - `noise_thr`: Wavelet denoising threshold.
+    - `fbdd_noise_reduction`: Impulse noise reduction (Off, Light, Full).
+    - `median_filter_passes`: Post-demosaic filtering.
+- **Performance**:
+    - `half_size`: 4x speedup (half resolution) for drafts.
+
 #### Execution Logic (`execute` method)
 1. Opens the file using `rawpy.imread`.
 2. Calls `raw.postprocess` with the specified parameters.
