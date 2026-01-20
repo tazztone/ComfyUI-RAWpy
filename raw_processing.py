@@ -152,6 +152,27 @@ def process_raw(
     if thumb_array.ndim == 2:
         thumb_array = np.stack([thumb_array] * 3, axis=-1)
 
+    # Resize thumbnail if it's too large (some cameras embed full-res JPEG)
+    # Cap the longest edge at 1024 pixels for a true "preview"
+    MAX_PREVIEW_SIZE = 1024
+    h, w = thumb_array.shape[:2]
+    if max(h, w) > MAX_PREVIEW_SIZE:
+        from PIL import Image
+
+        # Convert to PIL for high-quality resize
+        pil_thumb = Image.fromarray((thumb_array * 255).astype(np.uint8))
+
+        # Calculate new size preserving aspect ratio
+        if w > h:
+            new_w = MAX_PREVIEW_SIZE
+            new_h = int(h * (MAX_PREVIEW_SIZE / w))
+        else:
+            new_h = MAX_PREVIEW_SIZE
+            new_w = int(w * (MAX_PREVIEW_SIZE / h))
+
+        pil_thumb = pil_thumb.resize((new_w, new_h), Image.Resampling.LANCZOS)
+        thumb_array = np.array(pil_thumb).astype(np.float32) / 255.0
+
     thumb_tensor = torch.from_numpy(thumb_array).unsqueeze(0)
 
     # Convert to standard ComfyUI format (float32 [0,1])

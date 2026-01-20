@@ -27,6 +27,7 @@ class TestRawProcessing:
             white_balance="camera",
             highlight_mode_key="clip",
         )
+        assert mock_rawpy.postprocess.called, "postprocess should be called"
         assert image.shape == (1, 100, 100, 3)
         assert image.dtype == torch.float32
         # Preview should be 1x1 black pixel by default in mock if not set
@@ -139,3 +140,56 @@ class TestRawProcessing:
         process_raw("test.arw", half_size=True)
         call_args = mock_rawpy.postprocess.call_args
         assert call_args.kwargs["half_size"] is True
+
+    def test_orientation_passed(self, mock_rawpy):
+        """Verify orientation parameter is forwarded."""
+        from raw_processing import ORIENTATION_MAP
+
+        process_raw("test.arw", orientation_key="90° CW")
+        call_args = mock_rawpy.postprocess.call_args
+        assert call_args.kwargs["user_flip"] == ORIENTATION_MAP["90° CW"]
+
+    def test_colorspace_passed(self, mock_rawpy):
+        """Verify colorspace parameter is forwarded."""
+        from raw_processing import OUTPUT_COLORSPACES
+
+        process_raw("test.arw", colorspace_key="Adobe RGB")
+        call_args = mock_rawpy.postprocess.call_args
+        assert call_args.kwargs["output_color"] == OUTPUT_COLORSPACES["Adobe RGB"]
+
+    def test_gamma_passed(self, mock_rawpy):
+        """Verify gamma tuple is forwarded."""
+        process_raw("test.arw", gamma=(1.0, 1.0))
+        call_args = mock_rawpy.postprocess.call_args
+        assert call_args.kwargs["gamma"] == (1.0, 1.0)
+
+    def test_chromatic_aberration_passed(self, mock_rawpy):
+        """Verify CA tuple is forwarded."""
+        process_raw("test.arw", chromatic_aberration=(1.1, 0.9))
+        call_args = mock_rawpy.postprocess.call_args
+        assert call_args.kwargs["chromatic_aberration"] == (1.1, 0.9)
+
+    def test_auto_wb_flag(self, mock_rawpy):
+        """Verify use_auto_wb flag is set."""
+        process_raw("test.arw", white_balance="auto")
+        call_args = mock_rawpy.postprocess.call_args
+        assert call_args.kwargs.get("use_auto_wb") is True
+        assert "use_camera_wb" not in call_args.kwargs
+
+    def test_thumbnail_dimensions_correction(self, mock_rawpy):
+        """Verify 2D thumbnail is expanded to 3D."""
+        import rawpy
+        from unittest.mock import MagicMock
+
+        mock_thumb = MagicMock()
+        mock_thumb.format = rawpy.ThumbFormat.BITMAP
+        # Create a single channel 2D image
+        mock_thumb.data = np.full((10, 10), 128, dtype=np.uint8)
+
+        mock_rawpy.extract_thumb.return_value = mock_thumb
+
+        _, preview = process_raw("test.arw")
+
+        assert preview.shape == (1, 10, 10, 3)
+        # Should be grayscale (all channels equal)
+        assert preview[0, 0, 0, 0] == preview[0, 0, 0, 1] == preview[0, 0, 0, 2]

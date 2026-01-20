@@ -117,6 +117,7 @@ The tests are split into two categories to ensure fast feedback loops while stil
 | :--- | :--- |
 | `test_syntax.py` | Ensures all files are valid Python and follow strict import rules. |
 | `test_raw_processing.py` | Validates isolated core logic (`raw_processing.py`) without ComfyUI dependencies. |
+| `test_nodes.py` | Validates `nodes.py` input mapping using mocks. **Must use lazy imports**. |
 
 #### Integration Tests (`tests/integration/`)
 *   **Speed:** Slow (Requires network)
@@ -128,6 +129,7 @@ The tests are split into two categories to ensure fast feedback loops while stil
 | **Node Registration** | Checks that nodes are correctly registered with the server. |
 | **Server Health** | Verifies the ComfyUI API is reachable and healthy. |
 | **Server Startup** | Verifies that ComfyUI starts successfully with the node installed (`test_server_startup.py`). |
+| **Real RAW Decoding** | Verifies actual decoding of sample files (`test_real_workflow.py`). |
 
 ### 🛠 Developer Guide
 
@@ -143,10 +145,30 @@ The codebase uses a **Dependency Isolation** pattern to enable unit testing.
 
 #### Writing Unit Tests
 - Use existing `mock_rawpy` fixture in `conftest.py` to simulate LibRaw behavior.
-- Import functions from `raw_processing.py`, **not** from `nodes.py`.
+- Use existing `mock_rawpy` fixture in `conftest.py` to simulate LibRaw behavior.
+- Import functions from `raw_processing.py`.
+- **Unit Testing `nodes.py`**: While `AGENTS.md` historically advised against this, we now support checking node mapping logic in `tests/unit/test_nodes.py`.
+    - **CRITICAL PROTOCOL**: You MUST use **lazy imports** inside test methods (e.g., `from nodes import LoadRawImage` inside the `def test_...`).
+    - **Reason**: Global mocks in `conftest.py` are injected into `sys.modules` during session startup. If you import `nodes.py` at the top level of a test file, it may trigger an import of `folder_paths` or `comfy_api` *before* the mocks are active, causing a crash.
+
+#### The Dual-Import Strategy (`nodes.py`)
+To support both production (ComfyUI package) and testing (standalone), `nodes.py` uses a guarded import pattern:
+```python
+try:
+    from .raw_processing import ...
+except ImportError:
+    from raw_processing import ...
+```
+**Never remove this block.** It ensures that unit tests (which run `nodes.py` as a top-level module) can still find the core logic.
 
 #### Writing Integration Tests
-Integration tests use the `api_client` fixture to talk to the server.
+Integration tests use the `api_client` fixture to talk to the server (e.g., `tests/integration/test_server.py`).
+
+**Real Data Testing**:
+We also support testing with **real RAW files** in `tests/integration/test_real_workflow.py`.
+- Place sample `ARW` files in `sample_files/`.
+- Use the `sample_raw_file` fixture in `conftest.py` to get the path.
+- These tests run locally (no server required) but are marked as integration because they involve the full file processing pipeline.
 ```python
 @pytest.mark.integration
 def test_my_node_exists(self, api_client):
@@ -158,8 +180,14 @@ def test_my_node_exists(self, api_client):
     - **Cause**: Running `pytest` from the root directory.
     - **Fix**: Always use `python run_tests.py`.
 - **`ModuleNotFoundError: No module named 'folder_paths'`**:
-    - **Cause**: Your unit test is importing `nodes.py` which depends on ComfyUI.
-    - **Fix**: Move the logic you are testing into `raw_processing.py` (or a similar utility file) and test that instead.
+    - **Cause**: Your unit test is importing `nodes.py` which depends on ComfyUI, and either the mock in `conftest.py` failed or you used a top-level import.
+    - **Fix**: 
+        1. Ensure you are using `python run_tests.py`.
+        2. Move the import `from nodes import ...` INSIDE your test method (Lazy Import).
+        3. Verify `conftest.py` still contains the `sys.modules` mocking block.
+- **`ImportError: attempted relative import with no known parent package`**:
+    - **Cause**: Pytest collecting `nodes.py` and hitting `from .raw_processing`.
+    - **Fix**: Ensure the `try/except ImportError` block in `nodes.py` is present.
 
 
 ## 🎓 Recommended Tasks for Agents

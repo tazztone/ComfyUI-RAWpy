@@ -4,13 +4,24 @@ import numpy as np
 
 import os
 from comfy_api.latest import io, ui
-from .raw_processing import (
-    process_raw,
-    HIGHLIGHT_MODES,
-    DEMOSAIC_ALGORITHMS,
-    OUTPUT_COLORSPACES,
-    ORIENTATION_MAP,
-)
+
+try:
+    from .raw_processing import (
+        process_raw,
+        HIGHLIGHT_MODES,
+        DEMOSAIC_ALGORITHMS,
+        OUTPUT_COLORSPACES,
+        ORIENTATION_MAP,
+    )
+except ImportError:
+    # Fallback for unit testing where nodes is imported as top-level
+    from raw_processing import (
+        process_raw,
+        HIGHLIGHT_MODES,
+        DEMOSAIC_ALGORITHMS,
+        OUTPUT_COLORSPACES,
+        ORIENTATION_MAP,
+    )
 
 
 def _get_files():
