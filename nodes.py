@@ -32,7 +32,7 @@ class LoadRawImage(io.ComfyNode):
             category="image/raw",
             description="Load a RAW image with essential settings.",
             inputs=[
-                io.Combo.Input("image", _get_files(), image_upload=True),
+                io.Combo.Input("image", _get_files(), upload=io.UploadType.image),
                 io.Boolean.Input(
                     "output_16bit",
                     default=True,
@@ -83,7 +83,7 @@ class LoadRawImageAdvanced(io.ComfyNode):
             description="Load a RAW image with professional control over all development parameters.",
             inputs=[
                 # Core
-                io.Combo.Input("image", _get_files(), image_upload=True),
+                io.Combo.Input("image", _get_files(), upload=io.UploadType.image),
                 io.Boolean.Input(
                     "output_16bit",
                     default=True,
