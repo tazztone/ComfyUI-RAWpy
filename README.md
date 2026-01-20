@@ -1,15 +1,20 @@
 # ComfyUI RAW Image Loader
 
-A custom node extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) that enables loading and processing of RAW image files directly into your workflows.
+![V3 Compatible](https://img.shields.io/badge/ComfyUI-V3%20API-green)
+![License](https://img.shields.io/github/license/dimtion/comfyui-raw-image)
+
+A custom node extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) that enables high-quality loading and processing of RAW image files directly into your workflows.
 
 ![Screenshot of the tool](.github/img/node-screenshot.png)
 
 ## Features
 
-- Load RAW images from various camera manufacturers (Canon, Nikon, Sony, Fuji, etc.)
-- Adjust brightness with automatic or manual controls
-- Configure highlight handling with multiple modes
-- Seamless integration with ComfyUI's image processing pipeline
+- **Standardized V3 Node Architecture**: Fully compliant with the latest ComfyUI standards.
+- **Universal RAW Support**: Loads files from almost any camera (Canon, Nikon, Sony, Fuji, etc.) via `LibRaw`.
+- **Advanced Processing**: 
+    - Automatic or Manual Brightness (Linear Gain).
+    - Multiple Highlight Recovery modes (Clip, Blend, Reconstruct).
+- **Workflow Templates**: Includes built-in example workflows (access via the "Workflow Templates" menu).
 
 ## Installation
 

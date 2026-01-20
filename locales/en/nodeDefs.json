@@ -1,0 +1,25 @@
+{
+    "Load Raw Image": {
+        "title": "Load RAW Image 📷",
+        "inputs": {
+            "image": "Image",
+            "use_auto_bright": "Auto Brightness",
+            "bright_adjustment": "Brightness",
+            "highlight_mode": "Highlight Mode"
+        },
+        "widgets": {
+            "image": {
+                "tooltip": "The RAW image file to load from the input directory."
+            },
+            "use_auto_bright": {
+                "tooltip": "Automatically adjust brightness using LibRaw's auto-scale."
+            },
+            "bright_adjustment": {
+                "tooltip": "Manual brightness multiplier (default 1.0)."
+            }
+        },
+        "outputs": {
+            "IMAGE": "Image"
+        }
+    }
+}
