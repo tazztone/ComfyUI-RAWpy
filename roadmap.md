@@ -1,63 +1,99 @@
 # Roadmap: ComfyUI-RAWpy
 
-This document outlines the planned features and improvements for the `ComfyUI-RAWpy` extension, sorted by priority.
-
-## ✅ Phase 0: Modernization (Completed)
-- [x] **V3 API Migration**: Full adoption of `io.ComfyNode` and `define_schema`.
-- [x] **Standardization**: Added help documentation, workflow templates, and i18n structure.
+This document outlines the planned features and improvements for the `ComfyUI-RAWpy` extension.
 
 ---
 
-## ✅ Priority 1: Image Quality & Core Essentials (Completed)
-*Focus: Maximizing the fidelity of the output image and providing basic photographic control.*
+## ✅ Phase 0: Core RAW Processing (Completed)
+- [x] **V3 API Migration**: Full adoption of `io.ComfyNode` and `define_schema`.
+- [x] **16-bit Pipeline**: Support `output_bps=16` for higher dynamic range.
+- [x] **White Balance Controls**: Camera WB, Auto WB, Custom RGBG multipliers.
+- [x] **Demosaicing Algorithms**: AHD, VNG, PPG, DCB, AMAZE, LINEAR, DHT.
+- [x] **Color Science**: sRGB, Adobe RGB, ProPhoto, Wide Gamut, XYZ, ACES, Rec2020.
+- [x] **Gamma & Exposure**: Custom gamma curves, exposure shift, highlight preservation.
+- [x] **Chromatic Aberration Correction**: Red/Blue scale coefficients.
+- [x] **Embedded Previews**: Extract embedded JPEG/Bitmap thumbnails.
 
-- [x] **16-bit Pipeline**: Support `output_bps=16` in `postprocess` to provide higher dynamic range directly to ComfyUI's float32 tensors, avoiding 8-bit quantization artifacts.
-- [x] **White Balance Controls**:
-  - [x] `use_camera_wb`: Use the white balance stored in the image metadata.
-  - [x] `use_auto_wb`: Calculate white balance automatically from image content.
-  - [x] `user_wb`: Custom RGBG multipliers for precise manual control.
-- [x] **Demosaicing Algorithm Selection**: Expose algorithms (AHD, VNG, PPG, DCB, etc.) to allow users to choose between speed and artifact reduction.
-- [x] **Manual Orientation**: Support `user_flip` for cases where the camera's orientation sensor was incorrect.
+---
 
-## ✅ Priority 2: Color Science & Exposure (Completed)
-*Focus: Professional color management and linear workflow integration.*
+## ✅ Phase 1: ExifTool Integration (Completed)
+- [x] **Multi-Thumbnail Support**: 3 outputs (IMAGE, preview, thumbnail).
+- [x] **ExifTool-based Extraction**: Target specific embedded images:
+  - `ThumbnailImage` (small ~4KB)
+  - `PreviewImage` (medium ~150KB)
+  - `JpgFromRaw` (full-size JPEG)
+- [x] **Graceful Fallback**: Works without ExifTool (returns 1x1 placeholder).
 
-- [x] **Output Color Spaces**: Support selecting specific color spaces (sRGB, Adobe RGB, Wide Gamut, ProPhoto, etc.).
-- [x] **Gamma Control**: Allow custom gamma curves (power and slope) for linear or specialized workflows.
-- [x] **Exposure Fine-tuning**:
-  - [x] `exp_shift`: Linear exposure shift.
-  - [x] `exp_preserve_highlights`: Control highlight detail preservation during exposure shifts.
-- [x] **Chromatic Aberration Correction**: Add inputs for red/blue scale coefficients to fix fringing.
+---
 
-## 🧹 Priority 3: Artifact Reduction & Pre-processing
-*Focus: Cleaning up raw data before it enters the AI/Latent pipeline.*
+## 🚀 Phase 2: Camera & Capture Metadata Nodes
+*Focus: Extract and expose critical shooting parameters.*
 
-- [ ] **Wavelet Denoising**: Implement `noise_thr` for effective pre-demosaic noise reduction.
-- [ ] **Impulse Noise Reduction**: Add `fbdd_noise_reduction` (Fix Bad Data Demosaicing).
-- [ ] **Median Filter Passes**: Post-demosaic filtering to reduce color moiré and artifacts.
-- [ ] **Dark Frame Subtraction**: Support loading an external dark frame to remove sensor noise patterns.
-- [ ] **Bad Pixel Correction**: Support external map files for sensor defect correction.
+- [ ] **Metadata Extraction Node**: Return camera-specific MakerNotes as dictionary.
+  - Sony: Focus mode, Picture Profile
+  - Canon: Picture Style, Lens ID
+  - Nikon: Active D-Lighting settings
+- [ ] **Lens Data Output**: Exact lens model, serial number, distortion profiles.
+- [ ] **GPS Coordinates**: Geolocation for location-based workflows.
+- [ ] **Copyright & IPTC**: Creator info, keywords, descriptions.
 
-## 📂 Priority 4: Workflow & Metadata
-*Focus: Integration, efficiency, and data-driven workflows.*
+---
 
-- [ ] **Metadata Extraction**: Provide a dictionary of Exif and camera-specific metadata (ISO, Shutter, Aperture, Focal Length).
-- [ ] **Lens Profiles**: Output EXIF data specifically for lens-specific adjustments.
-- [ ] **XMP Sidecar Support**: Read `.xmp` files to apply WB and exposure from Lightroom/Darktable.
-- [x] **Embedded Preview Output**: Fast "instant-load" of the embedded JPEG preview for rapid prototyping.
-- [ ] **Lazy Loading / Draft Mode**: Option for fast loading by skipping interpolation for quick previews (e.g. half-size).
+## 🔀 Phase 3: Smart Workflow Routing
+*Focus: Route images through different pipelines based on metadata.*
 
-## 📽️ Priority 5: Advanced & Scientific Features
+- [ ] **ISO-Based Routing**: Apply stronger denoise for high-ISO shots (>3200).
+- [ ] **Focal Length Router**: Different sharpening for wide-angle vs telephoto.
+- [ ] **Flash Detection**: Auto-correct flash white balance.
+- [ ] **Scene Mode Detection**: Identify portrait/night/HDR mode from MakerNotes.
+
+---
+
+## 📁 Phase 4: Batch Organization & Management
+*Focus: Organize thousands of RAW files intelligently.*
+
+- [ ] **Time-Based Grouping**: Burst sequences, bracketed exposures, time-lapses.
+- [ ] **Camera Body Sorting**: Multi-camera shoots automatically separated.
+- [ ] **Lens-Specific Processing**: Apply lens correction profiles per manufacturer.
+- [ ] **Rating/Color Labels**: Import star ratings and color flags from Adobe/Capture One.
+
+---
+
+## 📝 Phase 5: Metadata Writing & Preservation
+*Focus: Write processing history back to XMP sidecar files.*
+
+- [ ] **XMP Sidecar Writing**: Track ComfyUI workflow IDs and parameters.
+- [ ] **AI Model Metadata**: Record which models were used for upscaling/enhancement.
+- [ ] **Cross-Platform Compatibility**: Export settings for Lightroom/Capture One.
+
+---
+
+## 🔬 Phase 6: Advanced Camera Features
 *Focus: Deep sensor access and unconventional creative control.*
 
-- [ ] **Raw Bayer Output**: Provide undecoded sensor data as a 1-channel tensor. 
-- [ ] **RGGB 4-Channel Node**: Output RAW data as a 4-channel image (separated R, G1, G2, B).
-- [ ] **Custom Linear Pipeline**: Skip all `rawpy` processing for custom demosaicing in Torch.
-- [ ] **Sub-image Selection**: Support for RAW files with multiple exposures or layers.
-
-## 🚂 Priority 6: Performance & Optimization
-- [ ] **GPU Post-processing**: Investigate Torch-based demosaicing to offload CPU work.
-- [ ] **Streaming Load**: Optimize memory usage for high-resolution 100MP+ images.
+- [ ] **Dual-Native ISO Detection**: Sony/Panasonic base ISO optimization.
+- [ ] **Focus Stacking Metadata**: Extract focus distance for intelligent merging.
+- [ ] **Color Profile Switching**: Manufacturer-specific color science (Sony HLG, Canon Log).
+- [ ] **Raw Bayer Output**: Undecoded sensor data as 1-channel tensor.
+- [ ] **RGGB 4-Channel Node**: Separated R, G1, G2, B for custom demosaicing.
 
 ---
+
+## 🚂 Phase 7: Performance & Optimization
+- [ ] **GPU Post-processing**: Torch-based demosaicing to offload CPU work.
+- [ ] **Streaming Load**: Optimize memory for 100MP+ images.
+- [ ] **Caching**: JSON metadata dumps to avoid repeated ExifTool calls.
+
+---
+
+## Strategic Benefits
+
+**Professional Workflow Tool**: This roadmap transforms ComfyUI-RAWpy from a simple RAW loader into a complete photographic workflow system.
+
+**Dataset Creation**: Photographers training AI models need accurate metadata for conditional training (e.g., teaching models about different lenses, cameras, lighting conditions).
+
+**Differentiation**: No other ComfyUI extension provides comprehensive camera metadata access.
+
+---
+
 *Suggestions or contributions are welcome! Please open an issue or PR on the GitHub repository.*

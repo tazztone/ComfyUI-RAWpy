@@ -53,14 +53,19 @@ class TestRealExecution:
             assert preview_batch.ndim == 4
             assert preview_batch.shape[3] == 3
 
-    def test_preview_is_smaller_than_main_image(self, sample_raw_file):
+    def test_thumbnail_is_small_via_exiftool(self, sample_raw_file):
         """
-        CRITICAL BUG TEST:
-        Verify that the preview output is the embedded thumbnail (small resolution),
-        NOT the full resolution image.
+        Verify that the thumbnail output (via ExifTool) is the small embedded thumbnail.
 
-        This was a real bug where extract_thumb() silently failed and preview
-        returned the same resolution as the main image.
+        Sony ARW files contain 3 embedded images:
+        - ThumbnailImage: ~4KB small thumbnail (extracted by ExifTool)
+        - PreviewImage: ~150KB medium preview
+        - JpgFromRaw: ~2.5MB full-res JPEG (returned by rawpy.extract_thumb())
+
+        The node now outputs:
+        - output[0]: Developed RAW image
+        - output[1]: JpgFromRaw preview (from rawpy) - may be full-res
+        - output[2]: ThumbnailImage (from ExifTool) - should be small
         """
         from unittest.mock import patch
         from nodes import LoadRawImage
@@ -73,25 +78,30 @@ class TestRealExecution:
 
             image_batch = output[0]
             preview_batch = output[1]
+            thumbnail_batch = output[2]
 
             main_height = image_batch.shape[1]
             main_width = image_batch.shape[2]
-            preview_height = preview_batch.shape[1]
-            preview_width = preview_batch.shape[2]
+            thumbnail_height = thumbnail_batch.shape[1]
+            thumbnail_width = thumbnail_batch.shape[2]
 
-            # The preview should be SIGNIFICANTLY smaller than the main image
-            # A typical RAW file is 6000x4000, while embedded JPEGs are usually 160x120 to 1600x1200
-            # We assert preview is at most 50% of the main image dimensions
-            assert preview_height < main_height * 0.5, (
-                f"Preview height {preview_height} should be much smaller than main {main_height}. "
-                "Thumbnail extraction likely failed!"
+            # The ExifTool thumbnail should be TINY (usually 160x120 or similar)
+            assert thumbnail_height < 500, (
+                f"Thumbnail height {thumbnail_height} should be small (< 500px). "
+                "ExifTool extraction may have failed."
             )
-            assert preview_width < main_width * 0.5, (
-                f"Preview width {preview_width} should be much smaller than main {main_width}. "
-                "Thumbnail extraction likely failed!"
+            assert thumbnail_width < 500, (
+                f"Thumbnail width {thumbnail_width} should be small (< 500px). "
+                "ExifTool extraction may have failed."
             )
 
-            # Also verify preview is not a 1x1 fallback black pixel
-            assert preview_height > 1 and preview_width > 1, (
-                "Preview is 1x1, indicating thumbnail extraction failed entirely."
+            # Verify it's not a 1x1 fallback
+            assert thumbnail_height > 1 and thumbnail_width > 1, (
+                "Thumbnail is 1x1, indicating ExifTool extraction failed."
             )
+
+            print(f"Main image: {main_width}x{main_height}")
+            print(
+                f"Preview (rawpy JpgFromRaw): {preview_batch.shape[2]}x{preview_batch.shape[1]}"
+            )
+            print(f"Thumbnail (ExifTool): {thumbnail_width}x{thumbnail_height}")

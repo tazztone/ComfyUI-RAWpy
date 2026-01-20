@@ -76,6 +76,10 @@ Exposes all parameters including:
 - Exposure Shift & Highlight Preservation
 - Chromatic Aberration Correction
 
+## Example Workflow
+
+![RAWpy Example Workflow](example_workflows/rawpy.jpg)
+
 ## Usage
 
 1. Place your RAW image files in your ComfyUI input directory

@@ -42,7 +42,7 @@ class LoadRawImage(io.ComfyNode):
             node_id="Load Raw Image",
             display_name="Load RAW Image (Simple) 📷",
             category="image/raw",
-            description="Load a RAW image with essential settings.",
+            description="Load a RAW image with essential settings. Outputs the developed image, full-res preview (from rawpy), and small thumbnail (via ExifTool).",
             inputs=[
                 io.Combo.Input("image", _get_files(), upload=io.UploadType.image),
                 io.Boolean.Input(
@@ -63,7 +63,11 @@ class LoadRawImage(io.ComfyNode):
                     tooltip="How to handle blown-out highlights:\n• Clip: Standard, clipls white to max.\n• Blend: Blends clipped channels (fixes pink highlights).\n• Reconstruct: Estimates missing data (slower but best).",
                 ),
             ],
-            outputs=[io.Image.Output(), io.Image.Output("preview")],
+            outputs=[
+                io.Image.Output(),
+                io.Image.Output("preview"),
+                io.Image.Output("thumbnail"),
+            ],
         )
 
     @classmethod
@@ -72,13 +76,41 @@ class LoadRawImage(io.ComfyNode):
     ) -> io.NodeOutput:
         image_path = folder_paths.get_annotated_filepath(image)
         try:
-            image, preview = process_raw(
+            # Main RAW processing (image + preview from rawpy)
+            image_tensor, preview_tensor = process_raw(
                 image_path,
                 output_16bit=output_16bit,
                 white_balance=white_balance,
                 highlight_mode_key=highlight_mode,
             )
-            return io.NodeOutput(image, preview)
+
+            # Try to extract small thumbnail via ExifTool
+            try:
+                from .thumbnail_extraction import (
+                    extract_thumbnail_exiftool,
+                    bytes_to_tensor,
+                    is_exiftool_available,
+                )
+            except ImportError:
+                from thumbnail_extraction import (
+                    extract_thumbnail_exiftool,
+                    bytes_to_tensor,
+                    is_exiftool_available,
+                )
+
+            thumbnail_tensor = None
+            if is_exiftool_available():
+                thumb_bytes = extract_thumbnail_exiftool(image_path, "ThumbnailImage")
+                if thumb_bytes:
+                    thumbnail_tensor = bytes_to_tensor(thumb_bytes)
+
+            # Fallback: if ExifTool failed, use 1x1 black placeholder
+            if thumbnail_tensor is None:
+                import torch
+
+                thumbnail_tensor = torch.zeros((1, 1, 1, 3))
+
+            return io.NodeOutput(image_tensor, preview_tensor, thumbnail_tensor)
         except Exception as e:
             raise RuntimeError(f"Failed to load RAW image: {str(e)}")
 
@@ -263,7 +295,11 @@ class LoadRawImageAdvanced(io.ComfyNode):
                     tooltip="Develop the image at half resolution (4x faster). Great for previews.",
                 ),
             ],
-            outputs=[io.Image.Output(), io.Image.Output("preview")],
+            outputs=[
+                io.Image.Output(),
+                io.Image.Output("preview"),
+                io.Image.Output("thumbnail"),
+            ],
         )
 
     @classmethod
@@ -295,7 +331,7 @@ class LoadRawImageAdvanced(io.ComfyNode):
     ) -> io.NodeOutput:
         image_path = folder_paths.get_annotated_filepath(image)
         try:
-            image, preview = process_raw(
+            image_tensor, preview_tensor = process_raw(
                 image_path,
                 output_16bit=output_16bit,
                 white_balance=white_balance,
@@ -315,7 +351,34 @@ class LoadRawImageAdvanced(io.ComfyNode):
                 median_filter_passes=median_filter_passes,
                 half_size=half_size,
             )
-            return io.NodeOutput(image, preview)
+
+            # Try to extract small thumbnail via ExifTool
+            try:
+                from .thumbnail_extraction import (
+                    extract_thumbnail_exiftool,
+                    bytes_to_tensor,
+                    is_exiftool_available,
+                )
+            except ImportError:
+                from thumbnail_extraction import (
+                    extract_thumbnail_exiftool,
+                    bytes_to_tensor,
+                    is_exiftool_available,
+                )
+
+            thumbnail_tensor = None
+            if is_exiftool_available():
+                thumb_bytes = extract_thumbnail_exiftool(image_path, "ThumbnailImage")
+                if thumb_bytes:
+                    thumbnail_tensor = bytes_to_tensor(thumb_bytes)
+
+            # Fallback: if ExifTool failed, use 1x1 black placeholder
+            if thumbnail_tensor is None:
+                import torch
+
+                thumbnail_tensor = torch.zeros((1, 1, 1, 3))
+
+            return io.NodeOutput(image_tensor, preview_tensor, thumbnail_tensor)
         except Exception as e:
             raise RuntimeError(f"Failed to load RAW image: {str(e)}")
 
