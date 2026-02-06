@@ -29,6 +29,7 @@ This document outlines the planned features and improvements for the `ComfyUI-RA
 ## 🚀 Phase 2: Camera & Capture Metadata Nodes
 *Focus: Extract and expose critical shooting parameters.*
 
+- [ ] **Enhanced Error Handling**: Detailed error reporting for unsupported or corrupted camera-specific formats.
 - [ ] **Metadata Extraction Node**: Return camera-specific MakerNotes as dictionary.
   - Sony: Focus mode, Picture Profile
   - Canon: Picture Style, Lens ID

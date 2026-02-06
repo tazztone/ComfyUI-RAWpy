@@ -9,19 +9,25 @@ A custom node extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 - **Standard & Advanced Nodes**:
   - `Load RAW Image (Simple)`: Quick loading with essential settings and fast draft mode.
   - `Load RAW Image (Advanced)`: Full professional control over the development pipeline.
+- **Modern V3 API Architecture**: Built from the ground up on the modern ComfyUI `io.ComfyNode` schema, ensuring long-term compatibility and better UI integration.
 - **Triple-Output System**:
   - **IMAGE**: The developed RAW image (processed via rawpy).
-  - **preview**: Higher-resolution embedded JPEG/Bitmap (fast loading).
-  - **thumbnail**: Tiny embedded thumbnail (highly optimized via ExifTool).
+  - **preview**: High-resolution embedded JPEG/Bitmap (fast loading via LibRaw).
+  - **thumbnail**: Tiny embedded thumbnail, highly optimized via **ExifTool** for superior performance in file browsers.
 - **High Quality Pipeline**:
-  - **16-bit Output**: Process in high bit-depth to preserve dynamic range.
+  - **16-bit Output**: Process in high bit-depth to preserve dynamic range (float32 tensors).
   - **Demosaicing Control**: Select algorithms from AHD (default) to AMAZE (high quality) or LINEAR (fast).
   - **Color Science**: Select output colorspace (sRGB, Adobe RGB, ProPhoto, Rec2020) and custom gamma curves.
 - **Exposure & Correction**:
   - **Exposure Shift**: Linear exposure adjustment with highlight preservation.
   - **White Balance**: Camera, Auto, Daylight, or Custom RGB multipliers.
   - **Optical Correction**: Chromatic aberration correction and manual orientation override.
-- **V3 API**: Built on the modern ComfyUI `io.ComfyNode` schema.
+
+## Performance & Optimization
+
+- **ExifTool Integration**: By leveraging ExifTool for thumbnail extraction, we bypass heavy image decoding for simple previews, making gallery browsing significantly faster.
+- **Half-Size Development**: Enable `half_size` to develop images at 1/4 resolution for 4x faster processing during the experimentation phase.
+- **Isolated Core Logic**: The RAW processing engine is decoupled from ComfyUI dependencies, allowing for high-performance execution and reliable unit testing.
 
 ## Installation
 
@@ -29,7 +35,7 @@ A custom node extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 
 - ComfyUI installed and working
 - Python 3.8+ environment
-- **ExifTool (Optional but Recommended)**: Required for high-speed small thumbnail extraction.
+- **ExifTool (Highly Recommended)**: Required for high-speed small thumbnail extraction.
   - **Windows**: Download `exiftool.exe` from [exiftool.org](https://exiftool.org/) and place it in your system PATH.
   - **Linux**: `sudo apt install exiftool`
   - **macOS**: `brew install exiftool`
@@ -87,6 +93,18 @@ Supports all RAW formats handled by the [rawpy library](https://www.libraw.org/s
 - Sony (ARW)
 - Fujifilm (RAF)
 - DNG (Digital Negative)
+
+## Quality & Testing
+
+This project maintains a high standard of quality through an extensive test suite:
+- **Unit Tests**: Verify core RAW processing logic in isolation.
+- **Integration Tests**: Ensure seamless registration and execution within the ComfyUI server.
+- **Dependency Mocking**: Tests are designed to run efficiently by mocking complex dependencies like LibRaw.
+
+To run the tests:
+```bash
+python run_tests.py
+```
 
 ## License
 
